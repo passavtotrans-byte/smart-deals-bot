@@ -1,10 +1,11 @@
+import os
 import sqlite3
-from datetime import datetime
+from datetime import datetimess
 
-import telebot
-from telebot import types
+TOKEN = os.getenv("BOT_TOKEN")
+if not TOKEN:
+    raise RuntimeError("BOT_TOKEN is not set")
 
-TOKEN = "8526507861:AAHuc4jsp_3VslxYR1aFDxojB3L7CUddAO0"
 bot = telebot.TeleBot(TOKEN)
 
 # ---------- DB (SQLite) ----------
