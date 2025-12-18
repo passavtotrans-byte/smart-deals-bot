@@ -1,6 +1,6 @@
 import os
 import sqlite3
-from datetime import datetimess
+from datetime import datetime
 
 TOKEN = os.getenv("BOT_TOKEN")
 if not TOKEN:
