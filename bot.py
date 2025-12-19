@@ -3,6 +3,7 @@ import sqlite3
 from datetime import datetime
 import telebot
 from telebot import types
+import time
 TOKEN = os.getenv("BOT_TOKEN")
 if not TOKEN:
     raise RuntimeError("BOT_TOKEN is not set")
@@ -238,4 +239,29 @@ def ignore_text(message):
 # ---------- Start ----------
 db_init()
 print("Bot is running...")
-bot.infinity_polling()
+def run_polling():
+    while True:
+        try:
+            # один поток, без threaded — меньше конфликтов
+            bot.polling(
+                none_stop=True,
+                interval=1,
+                timeout=60,
+                long_polling_timeout=60
+            )
+        except Exception as e:
+            msg = str(e)
+
+            # если Telegram ругается на 409 — ждём и пробуем снова
+            if "409" in msg or "getUpdates" in msg:
+                print("409 conflict detected. Sleep 20s and retry...")
+                time.sleep(20)
+                continue
+
+            # любые другие ошибки — не валим сервис
+            print("Polling error:", e)
+            time.sleep(5)
+
+
+if __name__ == "__main__":
+    run_polling()
