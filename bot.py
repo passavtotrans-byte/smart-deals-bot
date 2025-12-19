@@ -2,6 +2,7 @@ import os
 import sqlite3
 from datetime import datetime
 import telebot
+from telebot import types
 TOKEN = os.getenv("BOT_TOKEN")
 if not TOKEN:
     raise RuntimeError("BOT_TOKEN is not set")
