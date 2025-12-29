@@ -241,21 +241,6 @@ def ignore_text(message):
 
 # ---------- Start ----------
 db_init()
-print("Bot is running...")
-
-        except Exception as e:
-            msg = str(e)
-
-            # если Telegram ругается на 409 — ждём и пробуем снова
-            if "409" in msg or "getUpdates" in msg:
-                print("409 conflict detected. Sleep 20s and retry...")
-                time.sleep(20)
-                continue
-
-            # любые другие ошибки — не валим сервис
-            print("Polling error:", e)
-            time.sleep(5)
-
 
 
 if __name__ == "__main__":
@@ -266,4 +251,6 @@ if __name__ == "__main__":
         long_polling_timeout=60,
         none_stop=True,
         threaded=False
-    )    
+    )       
+
+
