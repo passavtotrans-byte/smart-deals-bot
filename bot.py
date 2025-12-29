@@ -144,7 +144,10 @@ def back_kb():
 def start(message):
     parts = message.text.split(maxsplit=1)
     ref_payload = parts[1].strip() if len(parts) > 1 else ""
-
+     # ✅ Windows entry from Google Sites
+    if ref_payload == "win":
+        send_windows_entry(message.chat.id)
+        return
     referrer_id = None
     if ref_payload.startswith("ref_"):
         tail = ref_payload.replace("ref_", "", 1)
@@ -239,16 +242,7 @@ def ignore_text(message):
 # ---------- Start ----------
 db_init()
 print("Bot is running...")
-def run_polling():
-    while True:
-        try:
-            # один поток, без threaded — меньше конфликтов
-            bot.polling(
-                none_stop=True,
-                interval=1,
-                timeout=60,
-                long_polling_timeout=60
-            )
+
         except Exception as e:
             msg = str(e)
 
@@ -263,5 +257,13 @@ def run_polling():
             time.sleep(5)
 
 
+
 if __name__ == "__main__":
-    run_polling()
+    print("Bot is running...")
+    bot.infinity_polling(
+        skip_pending=True,
+        timeout=60,
+        long_polling_timeout=60,
+        none_stop=True,
+        threaded=False
+    )    
