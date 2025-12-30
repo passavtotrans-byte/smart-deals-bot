@@ -249,7 +249,6 @@ if __name__ == "__main__":
         skip_pending=True,
         timeout=60,
         long_polling_timeout=60,
-        none_stop=True
     )       
 
 
