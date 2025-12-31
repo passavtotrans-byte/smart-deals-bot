@@ -142,49 +142,26 @@ def back_kb():
 # ---------- Handlers ----------
 @bot.message_handler(commands=["start"])
 def start(message):
+    print("TEXT:", message.text)
+
     parts = message.text.split(maxsplit=1)
     ref_payload = parts[1].strip() if len(parts) > 1 else ""
-     # ✅ Windows entry from Google Sites
+
+    print("PAYLOAD:", ref_payload)
+
+    # ✅ Вхід з Google Sites: ?start=win
     if ref_payload == "win":
-        send_windows_entry(message.chat.id)
+        bot.send_message(message.chat.id, "🪟 WIN СПРАЦЮВАВ")
         return
-    referrer_id = None
-    if ref_payload.startswith("ref_"):
-        tail = ref_payload.replace("ref_", "", 1)
-        if tail.isdigit():
-            referrer_id = int(tail)
 
-    # завжди зберігаємо юзера
-    upsert_user(message.from_user, referrer_id=None)
-
-    # ---- РЕФЕРАЛЬНА ЛОГІКА (єдине місце де існує added) ----
-    if referrer_id:
-        added = try_add_referral(referrer_id, message.from_user.id)
-
-        if added:
-            # повідомлення рефереру
-            try:
-                bot.send_message(
-                    referrer_id,
-                    f"🎉 Новий реферал: {message.from_user.first_name} (ID: {message.from_user.id})"
-                )
-            except:
-                pass
-
-            # повідомлення рефералу
-            bot.send_message(
-                message.chat.id,
-                "🎁 Вітаємо!\n"
-                "Ти прийшов за запрошенням друга.\n"
-                "Бонус активовано ✅"
-            )
-
-    # ---- МЕНЮ ----
+    # --- стандартний старт ---
     bot.send_message(
         message.chat.id,
         "Привіт! Я Smart Deals Assistant ✅\nОбери дію нижче:",
         reply_markup=main_menu_kb()
     )
+
+    
 
 @bot.callback_query_handler(func=lambda call: True)
 def callbacks(call):
