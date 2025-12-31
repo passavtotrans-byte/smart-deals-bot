@@ -152,7 +152,7 @@ def start(message):
     # ✅ Вхід з Google Sites: ?start=win
     if ref_payload == "win":
         bot.send_message(message.chat.id, "🪟 WIN СПРАЦЮВАВ")
-        return
+        
 
     # --- стандартний старт ---
     bot.send_message(
