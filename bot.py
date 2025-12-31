@@ -142,17 +142,16 @@ def back_kb():
 # ---------- Handlers ----------
 @bot.message_handler(commands=["start"])
 def start(message):
-    print("TEXT:", message.text)
-
     parts = message.text.split(maxsplit=1)
     ref_payload = parts[1].strip() if len(parts) > 1 else ""
 
+    print("TEXT:", message.text)
     print("PAYLOAD:", ref_payload)
 
     # ✅ Вхід з Google Sites: ?start=win
     if ref_payload == "win":
-        bot.send_message(message.chat.id, "🪟 WIN СПРАЦЮВАВ")
-        
+        send_windows_entry(message.chat.id)
+        return  # ⛔ ВАЖЛИВО: далі код НЕ йде
 
     # --- стандартний старт ---
     bot.send_message(
@@ -211,21 +210,36 @@ def callbacks(call):
         bot.answer_callback_query(call.id, "Невідома дія")
 
 # (Поки що) ігноруємо звичайний текст, щоб бот не спамив ехо
-@bot.message_handler(func=lambda m: True)
-def ignore_text(message):
+# @bot.message_handler(func=lambda m: True)
+#def ignore_text(message):
     # Можна або мовчати, або підказувати /start — як захочеш
-    bot.send_message(message.chat.id, "Напиши /start щоб відкрити меню.")
+#    bot.send_message(message.chat.id, "Напиши /start щоб відкрити меню.")
 
-# ---------- Start ----------
-db_init()
-
-
+# -------- Start --------
 if __name__ == "__main__":
+    import time
+    from telebot.apihelper import ApiTelegramException
+
+    db_init()
+
     print("Bot is running...")
-    bot.infinity_polling(
-        skip_pending=True,
-        timeout=60,
-        long_polling_timeout=60,
-    )       
+
+    while True:
+        try:
+            bot.infinity_polling(
+                skip_pending=True,
+                timeout=60,
+                long_polling_timeout=60
+            )
+        except ApiTelegramException as e:
+            # 409 = второй getUpdates (обычно при деплое/перезапуске)
+            if getattr(e, "error_code", None) == 409:
+                print("409 conflict (another getUpdates). Retry in 5s...")
+                time.sleep(5)
+                continue
+            raise
+        except Exception as e:
+            print("Polling crashed:", e)
+            time.sleep(5)
 
 
