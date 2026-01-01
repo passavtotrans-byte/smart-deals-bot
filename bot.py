@@ -225,20 +225,21 @@ if __name__ == "__main__":
 
     while True:
         try:
-            # ВАЖНО: polling (не infinity_polling) и без потоков
             bot.polling(
                 none_stop=True,
                 skip_pending=True,
                 timeout=60,
-                long_polling_timeout=60
+                long_polling_timeout=60,
+                threaded=False,   # ✅ ВОТ ЭТО ГЛАВНОЕ
             )
+
         except ApiTelegramException as e:
-            # 409 = другой getUpdates сейчас активен
             if getattr(e, "error_code", None) == 409:
                 print("409 conflict (another getUpdates). Retry in 10s...")
                 time.sleep(10)
                 continue
             raise
+
         except Exception as e:
             print("Polling crashed:", e)
             time.sleep(5)
