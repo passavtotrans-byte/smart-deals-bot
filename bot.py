@@ -8,7 +8,7 @@ TOKEN = os.getenv("BOT_TOKEN")
 if not TOKEN:
     raise RuntimeError("BOT_TOKEN is not set")
 
-bot = telebot.TeleBot(TOKEN)
+bot = telebot.TeleBot(TOKEN, threaded=False)
 
 # ---------- DB (SQLite) ----------
 DB_PATH = "bot.db"
@@ -221,21 +221,22 @@ if __name__ == "__main__":
     from telebot.apihelper import ApiTelegramException
 
     db_init()
-
     print("Bot is running...")
 
     while True:
         try:
-            bot.infinity_polling(
+            # ВАЖНО: polling (не infinity_polling) и без потоков
+            bot.polling(
+                none_stop=True,
                 skip_pending=True,
                 timeout=60,
                 long_polling_timeout=60
             )
         except ApiTelegramException as e:
-            # 409 = второй getUpdates (обычно при деплое/перезапуске)
+            # 409 = другой getUpdates сейчас активен
             if getattr(e, "error_code", None) == 409:
-                print("409 conflict (another getUpdates). Retry in 5s...")
-                time.sleep(5)
+                print("409 conflict (another getUpdates). Retry in 10s...")
+                time.sleep(10)
                 continue
             raise
         except Exception as e:
