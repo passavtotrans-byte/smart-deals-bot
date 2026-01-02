@@ -3,6 +3,7 @@ import sqlite3
 from datetime import datetime
 import telebot
 from telebot import types
+from telebot.apihelper import ApiTelegramException
 import time
 def acquire_single_instance_lock():
     import fcntl
@@ -23,6 +24,14 @@ if not TOKEN:
     raise RuntimeError("BOT_TOKEN is not set")
 
 bot = telebot.TeleBot(TOKEN, threaded=False)
+@bot.message_handler(commands=["start"])
+def start(message):
+    upsert_user(message.from_user)  # реєстрація / оновлення юзера
+    bot.send_message(
+        message.chat.id,
+        "Привіт! 👋\nОбери дію нижче:",
+        reply_markup=main_menu_kb()
+    )
 
 # ---------- DB (SQLite) ----------
 DB_PATH = "bot.db"
@@ -365,12 +374,33 @@ def callbacks(call):
 
 # -------- Start --------
 if __name__ == "__main__":
-    acquire_single_instance_lock()   # БЕЗ _lock =
-
     db_init()
     print("Bot is running...")
 
-    bot.infinity_polling(skip_pending=True, timeout=60, long_polling_timeout=60)
+    while True:
+        try:
+            # long polling
+            bot.infinity_polling(
+                skip_pending=True,
+                timeout=60,
+                long_polling_timeout=60,
+            )
+
+        except ApiTelegramException as e:
+            # 409 = Telegram бачить інший активний getUpdates (інший процес/інстанс)
+            if getattr(e, "error_code", None) == 409:
+                print("409 conflict (another getUpdates). Sleep 15s and retry...")
+                time.sleep(15)
+                continue
+
+            # інші помилки Telegram — покажемо і дамо Render перезапустити (або побачимо в логах)
+            print("Telegram API error:", e)
+            raise
+
+        except Exception as e:
+            print("Unexpected error:", e)
+            time.sleep(5)
+            continue
 
     
 
