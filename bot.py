@@ -26,10 +26,9 @@ if not TOKEN:
 bot = telebot.TeleBot(TOKEN, threaded=False)
 @bot.message_handler(commands=["start"])
 def start(message):
-    upsert_user(message.from_user)  # реєстрація / оновлення юзера
     bot.send_message(
         message.chat.id,
-        "Привіт! 👋\nОбери дію нижче:",
+        "Привіт! Я Smart Deals Assistant ✅\nОбери дію нижче:",
         reply_markup=main_menu_kb()
     )
 
@@ -153,9 +152,8 @@ def main_menu_kb():
         types.InlineKeyboardButton("👤 Мій профіль", callback_data="profile"),
         types.InlineKeyboardButton("🔗 Мій реферальний лінк", callback_data="reflink"),
         types.InlineKeyboardButton("ℹ️ Допомога", callback_data="help"),
-       # ✅ НОВА КНОПКА
-    kb.add(types.InlineKeyboardButton("🖥 Повільно працює", callback_data="slow_pc"))    
     )
+    kb.add(types.InlineKeyboardButton("🖥 Повільно працює", callback_data="slow_pc"))
     return kb
 
 def back_kb():
@@ -268,11 +266,7 @@ def callbacks(call):
     else:
         bot.answer_callback_query(call.id, "Невідома дія")
         return
-@bot.callback_query_handler(func=lambda call: True)
-def callbacks(call):
-    data = call.data
-    uid = call.from_user.id
-    upsert_user(call.from_user)  # оновимо ім'я/username
+
 
     # 1) ГОЛОВНЕ МЕНЮ
     if data == "menu":
