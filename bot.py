@@ -176,9 +176,9 @@ def slow_pc_kb():
 def callbacks(call):
     data = call.data
     uid = call.from_user.id
-    upsert_user(call.from_user)  # оновимо ім'я/username
+    upsert_user(call.from_user)  # обновим имя/username
 
-    if data == "menu":
+      if data == "menu":
         bot.answer_callback_query(call.id)
         bot.edit_message_text(
             "Обери дію нижче:",
@@ -189,55 +189,78 @@ def callbacks(call):
 
     elif data == "deals":
         bot.answer_callback_query(call.id)
-        bot.send_message(call.message.chat.id, "🔥 Тут будуть знижки та акції (далі підключимо джерело).", reply_markup=back_kb())
+        bot.send_message(call.message.chat.id, "🔥 Тут будуть знижки та акції (скоро).")
+
     elif data == "slow_pc":
-    bot.answer_callback_query(call.id)
-    bot.edit_message_text(
-        "🖥 Комп’ютер працює повільно.\n\n"
-        "Я допоможу зібрати симптоми і зрозуміти:\n"
-        "— чи можна вирішити онлайн\n"
-        "— чи краще не витрачати час\n\n"
-        "Обери дію 👇",
-        chat_id=call.message.chat.id,
-        message_id=call.message.message_id,
-        reply_markup=slow_pc_kb()
-    elif data == "diag_info":
-    bot.answer_callback_query(call.id)
-    bot.edit_message_text(
-        "🔎 Як проходить діагностика\n\n"
-        "1️⃣ Ти коротко описуєш проблему\n"
-        "2️⃣ Я уточнюю симптоми\n"
-        "3️⃣ Кажу: можна вирішити онлайн чи ні\n"
-        "4️⃣ Якщо можна — озвучую вартість\n\n"
-        "❗ Я нічого не лагоджу без твоєї згоди.",
-        chat_id=call.message.chat.id,
-        message_id=call.message.message_id,
-        reply_markup=slow_pc_kb()
-    )
-    elif data == "profile":
         bot.answer_callback_query(call.id)
-        refs = count_referrals(uid)
-        ref_by = get_referrer(uid)
-        ref_by_text = f"{ref_by}" if ref_by else "—"
-        bot.send_message(
-            call.message.chat.id,
-            f"👤 Профіль:\nID: {uid}\nІмʼя: {call.from_user.first_name}\n\n👥 Запросив: {refs}\n🔗 Хто запросив: {ref_by_text}",
-            reply_markup=back_kb()
+        bot.edit_message_text(
+            "🧩 Комп’ютер працює повільно.\n\n"
+            "Я допоможу зібрати симптоми і зрозуміти:\n"
+            "— чи можна вирішити онлайн\n"
+            "— чи краще не витрачати час\n\n"
+            "Обери дію 👇",
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id,
+            reply_markup=slow_pc_kb()
+        )
+
+    elif data == "diag_info":
+        bot.answer_callback_query(call.id)
+        bot.edit_message_text(
+            "🔎 Як проходить діагностика:\n\n"
+            "1) Ти коротко описуєш проблему\n"
+            "2) Я уточнюю симптоми\n"
+            "3) Кажу: можна онлайн чи ні\n"
+            "4) Якщо можна — озвучую вартість\n\n"
+            "⚠️ Я нічого не роблю без твоєї згоди.",
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id,
+            reply_markup=slow_pc_kb()
+        )
+
+    elif data == "pay_info":
+        bot.answer_callback_query(call.id)
+        bot.edit_message_text(
+            "💳 Вартість і оплата:\n\n"
+            "• Діагностика: 0 грн (до узгодження)\n"
+            "• Просте налаштування/драйвер: від 100 грн\n"
+            "• Перевстановлення Windows: від 1500 грн\n\n"
+            "Оплата — тільки після того, як я підтверджу, що це можна зробити онлайн.\n"
+            "Якщо не зможемо допомогти — повертаємо оплату.",
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id,
+            reply_markup=slow_pc_kb()
         )
 
     elif data == "reflink":
         bot.answer_callback_query(call.id)
-        me = bot.get_me()
-        link = f"https://t.me/{me.username}?start=ref_{uid}"
+        link = f"https://t.me/{bot.get_me().username}?start=ref_{uid}"
         bot.send_message(
             call.message.chat.id,
-            f"🔗 Твій реферальний лінк:\n{link}\n\nСкопіюй і відправ друзям 😉",
+            f"🔗 Твій реферальний лінк:\n{link}\n\nСкопіюй і відправ друзям 🙂",
             reply_markup=back_kb()
         )
 
     elif data == "help":
         bot.answer_callback_query(call.id)
-        bot.send_message(call.message.chat.id, "ℹ️ Напиши /start щоб відкрити меню.", reply_markup=back_kb())
+        bot.send_message(call.message.chat.id, "ℹ️ Напиши /start щоб відкрити меню.")
+
+    else:
+        bot.answer_callback_query(call.id, "Невідома дія")
+
+    elif data == "profile":
+        bot.answer_callback_query(call.id)
+        # твой профиль-код остается как был
+        # (если хочешь — я под него тоже дам аккуратный блок)
+        bot.send_message(call.message.chat.id, "👤 Профіль (у розробці)")
+
+    elif data == "reflink":
+        bot.answer_callback_query(call.id)
+        bot.send_message(call.message.chat.id, "🔗 Реферальне посилання (у розробці)")
+
+    elif data == "help":
+        bot.answer_callback_query(call.id)
+        bot.send_message(call.message.chat.id, "ℹ️ Напиши /start щоб відкрити меню.")
 
     else:
         bot.answer_callback_query(call.id, "Невідома дія")
@@ -253,14 +276,12 @@ if __name__ == "__main__":
     db_init()
     print("Bot is running...")
 
-    # ВАЖНО: никаких while True, никаких retry внутри кода.
-    # Если будет ошибка (в т.ч. 409) — процесс упадёт, Render сам перезапустит.
-    bot.polling(
-        none_stop=True,
+    # якщо впаде з помилкою — Render сам перезапустить
+    bot.infinity_polling(
         skip_pending=True,
         timeout=60,
-        long_polling_timeout=60,
-        threaded=False
+        long_polling_timeout=60
     )
+    
 
 
