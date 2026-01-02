@@ -365,7 +365,7 @@ def callbacks(call):
 
 # -------- Start --------
 if __name__ == "__main__":
-    _lock = acquire_single_instance_lock()   # ← ОСЬ ТУТ
+    acquire_single_instance_lock()   # БЕЗ _lock =
 
     db_init()
     print("Bot is running...")
