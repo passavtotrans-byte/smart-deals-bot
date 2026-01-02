@@ -176,9 +176,10 @@ def slow_pc_kb():
 def callbacks(call):
     data = call.data
     uid = call.from_user.id
-    upsert_user(call.from_user)  # обновим имя/username
+    upsert_user(call.from_user)  # оновимо ім'я/username
 
-      if data == "menu":
+    # 1) ГОЛОВНЕ МЕНЮ
+    if data == "menu":
         bot.answer_callback_query(call.id)
         bot.edit_message_text(
             "Обери дію нижче:",
@@ -186,15 +187,38 @@ def callbacks(call):
             message_id=call.message.message_id,
             reply_markup=main_menu_kb()
         )
+        return
 
+    # 2) СТАРІ ПУНКТИ (як у тебе було)
     elif data == "deals":
         bot.answer_callback_query(call.id)
         bot.send_message(call.message.chat.id, "🔥 Тут будуть знижки та акції (скоро).")
+        return
 
+    elif data == "profile":
+        bot.answer_callback_query(call.id)
+        refs = count_referrals(uid)
+        ref_by = get_referrer(uid)
+        ref_by_text = f"{ref_by}" if ref_by else "--"
+        bot.send_message(call.message.chat.id, f"👤 Профіль:\nID: {uid}\nЗапросив: {ref_by_text}\nРефералів: {refs}")
+        return
+
+    elif data == "reflink":
+        bot.answer_callback_query(call.id)
+        link = f"https://t.me/{bot.get_me().username}?start=ref_{uid}"
+        bot.send_message(call.message.chat.id, f"🔗 Твій реферальний лінк:\n{link}", reply_markup=back_kb())
+        return
+
+    elif data == "help":
+        bot.answer_callback_query(call.id)
+        bot.send_message(call.message.chat.id, "ℹ️ Напиши /start щоб відкрити меню.")
+        return
+
+    # 3) НОВА ГІЛКА: ПОВІЛЬНО ПРАЦЮЄ
     elif data == "slow_pc":
         bot.answer_callback_query(call.id)
         bot.edit_message_text(
-            "🧩 Комп’ютер працює повільно.\n\n"
+            "🖥 Комп’ютер працює повільно.\n\n"
             "Я допоможу зібрати симптоми і зрозуміти:\n"
             "— чи можна вирішити онлайн\n"
             "— чи краще не витрачати час\n\n"
@@ -203,67 +227,48 @@ def callbacks(call):
             message_id=call.message.message_id,
             reply_markup=slow_pc_kb()
         )
+        return
 
     elif data == "diag_info":
         bot.answer_callback_query(call.id)
         bot.edit_message_text(
             "🔎 Як проходить діагностика:\n\n"
-            "1) Ти коротко описуєш проблему\n"
-            "2) Я уточнюю симптоми\n"
-            "3) Кажу: можна онлайн чи ні\n"
-            "4) Якщо можна — озвучую вартість\n\n"
-            "⚠️ Я нічого не роблю без твоєї згоди.",
+            "1️⃣ Ти коротко описуєш проблему\n"
+            "2️⃣ Я уточнюю симптоми\n"
+            "3️⃣ Кажу: можна онлайн чи ні\n"
+            "4️⃣ Якщо можна — озвучую вартість\n\n"
+            "⚠️ Я нічого не лагоджу без твоєї згоди.",
             chat_id=call.message.chat.id,
             message_id=call.message.message_id,
             reply_markup=slow_pc_kb()
         )
+        return
 
     elif data == "pay_info":
         bot.answer_callback_query(call.id)
         bot.edit_message_text(
             "💳 Вартість і оплата:\n\n"
-            "• Діагностика: 0 грн (до узгодження)\n"
-            "• Просте налаштування/драйвер: від 100 грн\n"
-            "• Перевстановлення Windows: від 1500 грн\n\n"
-            "Оплата — тільки після того, як я підтверджу, що це можна зробити онлайн.\n"
-            "Якщо не зможемо допомогти — повертаємо оплату.",
+            "✅ Спочатку коротка діагностика (2–5 хв)\n"
+            "✅ Потім — фіксована ціна за дію\n\n"
+            "Приклади:\n"
+            "• Драйвер/налаштування — від 100 грн\n"
+            "• Відновлення Windows — від 1500 грн\n\n"
+            "⚠️ Якщо не можемо допомогти — повернення/відміна оплати.",
             chat_id=call.message.chat.id,
             message_id=call.message.message_id,
             reply_markup=slow_pc_kb()
         )
+        return
 
-    elif data == "reflink":
+    elif data == "slow_pc_start":
         bot.answer_callback_query(call.id)
-        link = f"https://t.me/{bot.get_me().username}?start=ref_{uid}"
-        bot.send_message(
-            call.message.chat.id,
-            f"🔗 Твій реферальний лінк:\n{link}\n\nСкопіюй і відправ друзям 🙂",
-            reply_markup=back_kb()
-        )
+        bot.send_message(call.message.chat.id, "Ок ✅ Напиши одним повідомленням: що саме гальмує і коли почалось (після оновлення / давно / після встановлення програми)?")
+        return
 
-    elif data == "help":
-        bot.answer_callback_query(call.id)
-        bot.send_message(call.message.chat.id, "ℹ️ Напиши /start щоб відкрити меню.")
-
+    # 4) FALLBACK
     else:
         bot.answer_callback_query(call.id, "Невідома дія")
-
-    elif data == "profile":
-        bot.answer_callback_query(call.id)
-        # твой профиль-код остается как был
-        # (если хочешь — я под него тоже дам аккуратный блок)
-        bot.send_message(call.message.chat.id, "👤 Профіль (у розробці)")
-
-    elif data == "reflink":
-        bot.answer_callback_query(call.id)
-        bot.send_message(call.message.chat.id, "🔗 Реферальне посилання (у розробці)")
-
-    elif data == "help":
-        bot.answer_callback_query(call.id)
-        bot.send_message(call.message.chat.id, "ℹ️ Напиши /start щоб відкрити меню.")
-
-    else:
-        bot.answer_callback_query(call.id, "Невідома дія")
+        return
 
 # (Поки що) ігноруємо звичайний текст, щоб бот не спамив ехо
 # @bot.message_handler(func=lambda m: True)
