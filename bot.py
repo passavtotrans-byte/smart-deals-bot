@@ -4,6 +4,20 @@ from datetime import datetime
 import telebot
 from telebot import types
 import time
+def acquire_single_instance_lock():
+    import fcntl
+
+    lock_path = "/tmp/telegram_bot.lock"
+    lock_file = open(lock_path, "w")
+
+    try:
+        fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        print("Another instance is already running. Exit.")
+        raise SystemExit(0)
+
+    return lock_file
+
 TOKEN = os.getenv("BOT_TOKEN")
 if not TOKEN:
     raise RuntimeError("BOT_TOKEN is not set")
@@ -351,11 +365,13 @@ def callbacks(call):
 
 # -------- Start --------
 if __name__ == "__main__":
+    _lock = acquire_single_instance_lock()   # ← ОСЬ ТУТ
+
     db_init()
     print("Bot is running...")
 
-    # якщо впаде — Render сам перезапустить
     bot.infinity_polling(skip_pending=True, timeout=60, long_polling_timeout=60)
+
     
 
 
