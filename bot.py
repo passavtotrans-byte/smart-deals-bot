@@ -147,12 +147,18 @@ def get_referrer(user_id: int):
 def main_menu_kb():
     kb = types.InlineKeyboardMarkup(row_width=1)
     kb.add(
-        types.InlineKeyboardButton("🧪 Почати діагностику", callback_data="slow_pc_start"),
-        types.InlineKeyboardButton("🧾 Як проходить діагностика", callback_data="diag_info"),
+        types.InlineKeyboardButton("✍️ Почати діагностику", callback_data="slow_pc_start"),
+        types.InlineKeyboardButton("📄 Як проходить діагностика", callback_data="diag_info"),
         types.InlineKeyboardButton("💰 Вартість / оплата", callback_data="pay_info"),
         types.InlineKeyboardButton("🆘 Допомога", callback_data="help"),
     )
     return kb
+
+def back_kb():
+    kb = types.InlineKeyboardMarkup(row_width=1)
+    kb.add(types.InlineKeyboardButton("⬅️ Назад", callback_data="menu"))
+    return kb
+
 
 def back_kb():
     kb = types.InlineKeyboardMarkup(row_width=1)
@@ -164,8 +170,16 @@ def back_kb():
 @bot.callback_query_handler(func=lambda call: True)
 def callbacks(call):
     data = call.data
+    uid = call.from_user.id
+
+    # якщо у тебе є upsert_user — можна залишити:
+    try:
+        upsert_user(call.from_user)
+    except Exception:
+        pass
 
     if data == "menu":
+        bot.answer_callback_query(call.id)
         bot.edit_message_text(
             "Обери дію нижче:",
             chat_id=call.message.chat.id,
@@ -175,7 +189,19 @@ def callbacks(call):
         return
 
     elif data == "slow_pc_start":
-        handle_slow_pc_start(call)
+        bot.answer_callback_query(call.id)
+        msg = bot.send_message(
+            call.message.chat.id,
+            "✅ Ок. Напиши ОДНИМ повідомленням:\n"
+            "1) Що саме гальмує (запуск/браузер/все)\n"
+            "2) Коли почалось (сьогодні/вчора/тиждень)\n"
+            "3) Windows 10/11\n"
+            "4) Чи були помилки/сині екрани\n\n"
+            "Приклад:\n"
+            "1) все\n2) тиждень\n3) 11\n4) ні\n"
+            "Опис: при запуску екран блимає 3-4 рази, копіювання з затримкою."
+        )
+        bot.register_next_step_handler(msg, slow_pc_text)
         return
 
     elif data == "diag_info":
@@ -185,7 +211,7 @@ def callbacks(call):
             "1️⃣ Перевіряємо запуск Windows\n"
             "2️⃣ Перевіряємо диск та систему\n"
             "3️⃣ Дивимось автозапуск\n"
-            "4️⃣ Даємо чітке рішення",
+            "4️⃣ Даємо чітке рішення (онлайн/сервіс)\n",
             chat_id=call.message.chat.id,
             message_id=call.message.message_id,
             reply_markup=back_kb()
@@ -198,22 +224,34 @@ def callbacks(call):
             call.message.chat.id,
             "💰 Вартість та оплата:\n\n"
             "Діагностика — безкоштовно\n"
-            "Ремонт — після погодження"
+            "Ремонт — після погодження ✅"
         )
         return
 
     elif data == "help":
         bot.answer_callback_query(call.id)
-        bot.send_message(
-            call.message.chat.id,
-            "🆘 Напиши /start щоб відкрити меню"
-        )
+        bot.send_message(call.message.chat.id, "🆘 Напиши /start щоб відкрити меню.")
         return
 
-    # ✅ fallback — ЗАВЖДИ В КІНЦІ
     else:
         bot.answer_callback_query(call.id, "Невідома дія")
         return
+def slow_pc_text(message):
+    text = (message.text or "").strip()
+
+    reply = (
+        "Дякую, прийняв ✅\n\n"
+        "Попередній висновок: схоже на проблему з автозапуском/драйвером/диском або Windows-службами.\n\n"
+        "Зараз зробимо швидку перевірку (5–10 хв):\n"
+        "1) Відкрий Диспетчер задач → Вкладка 'Автозавантаження' → відключи все НЕ системне.\n"
+        "2) Перезавантаж ПК і перевір чи є затримки.\n"
+        "3) Якщо лишилось — підключимось віддалено і перевіримо диск/систему/драйвери.\n\n"
+        "Щоб підключитись: напиши сюди\n"
+        "✅ AnyDesk ID + пароль (або TeamViewer ID/пароль).\n"
+        "Або напиши: 'не можу' — я дам покроково, де натиснути."
+    )
+
+    bot.send_message(message.chat.id, reply)        
     # fallback
     
 
