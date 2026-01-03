@@ -165,9 +165,7 @@ def back_kb():
 def callbacks(call):
     data = call.data
 
-    # ГОЛОВНЕ МЕНЮ (кнопка "Назад")
     if data == "menu":
-        bot.answer_callback_query(call.id)
         bot.edit_message_text(
             "Обери дію нижче:",
             chat_id=call.message.chat.id,
@@ -176,21 +174,13 @@ def callbacks(call):
         )
         return
 
-    # 🛠 Почати діагностику
-    if data == "slow_pc_start":
-        bot.answer_callback_query(call.id)
-        bot.send_message(
-            call.message.chat.id,
-            "✅ Ок. Напиши одним повідомленням:\n"
-            "1) Що саме повільно (запуск/браузер/все)\n"
-            "2) Коли почалось (сьогодні/вчора/тиждень)\n"
-            "3) Windows 10/11\n"
-            "4) Чи були помилки/сині екрани",
-        )
+    elif data == "slow_pc_start":
+        handle_slow_pc_start(call)
         return
+   
 
     # 📄 Як проходить діагностика
-    if data == "diag_info":
+    elif data == "diag_info":
         bot.answer_callback_query(call.id)
         bot.edit_message_text(
             "📄 Як проходить діагностика:\n"
@@ -205,7 +195,7 @@ def callbacks(call):
         return
 
     # 💳 Вартість / оплата
-    if data == "pay_info":
+    elif data == "pay_info":
         bot.answer_callback_query(call.id)
         bot.edit_message_text(
             "💳 Вартість / оплата:\n"
@@ -219,13 +209,15 @@ def callbacks(call):
         return
 
     # 🆘 Допомога
-    if data == "help":
+    elif data == "help":
         bot.answer_callback_query(call.id)
         bot.send_message(call.message.chat.id, "🆘 Напиши /start щоб відкрити меню.")
         return
-
-    # fallback
+    else:
     bot.answer_callback_query(call.id, "Невідома дія")
+    return
+    # fallback
+    
 
 # (Поки що) ігноруємо звичайний текст, щоб бот не спамив ехо
 # @bot.message_handler(func=lambda m: True)
