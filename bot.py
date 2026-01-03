@@ -177,45 +177,43 @@ def callbacks(call):
     elif data == "slow_pc_start":
         handle_slow_pc_start(call)
         return
-   
 
-    # 📄 Як проходить діагностика
     elif data == "diag_info":
         bot.answer_callback_query(call.id)
         bot.edit_message_text(
-            "📄 Як проходить діагностика:\n"
-            "1) Ти описуєш симптоми\n"
-            "2) Я ставлю уточнюючі питання\n"
-            "3) Даю кроки перевірки\n"
-            "4) Узгоджуємо рішення",
+            "📄 Як проходить діагностика:\n\n"
+            "1️⃣ Перевіряємо запуск Windows\n"
+            "2️⃣ Перевіряємо диск та систему\n"
+            "3️⃣ Дивимось автозапуск\n"
+            "4️⃣ Даємо чітке рішення",
             chat_id=call.message.chat.id,
             message_id=call.message.message_id,
             reply_markup=back_kb()
         )
         return
 
-    # 💳 Вартість / оплата
     elif data == "pay_info":
         bot.answer_callback_query(call.id)
-        bot.edit_message_text(
-            "💳 Вартість / оплата:\n"
-            "• Спочатку узгоджуємо, що робимо і ціну\n"
-            "• Оплата — перед роботою\n"
-            "• Якщо онлайн не вирішу — чесно скажу",
-            chat_id=call.message.chat.id,
-            message_id=call.message.message_id,
-            reply_markup=back_kb()
+        bot.send_message(
+            call.message.chat.id,
+            "💰 Вартість та оплата:\n\n"
+            "Діагностика — безкоштовно\n"
+            "Ремонт — після погодження"
         )
         return
 
-    # 🆘 Допомога
     elif data == "help":
         bot.answer_callback_query(call.id)
-        bot.send_message(call.message.chat.id, "🆘 Напиши /start щоб відкрити меню.")
+        bot.send_message(
+            call.message.chat.id,
+            "🆘 Напиши /start щоб відкрити меню"
+        )
         return
+
+    # ✅ fallback — ЗАВЖДИ В КІНЦІ
     else:
-    bot.answer_callback_query(call.id, "Невідома дія")
-    return
+        bot.answer_callback_query(call.id, "Невідома дія")
+        return
     # fallback
     
 
