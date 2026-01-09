@@ -163,17 +163,59 @@ def kb_payment():
 def cmd_start(message):
     bot.send_message(message.chat.id, SCREEN_START, reply_markup=kb_main())
 
+@bot.message_handler(func=lambda m: True)
+def on_text(message): 
+
+    raw = (message.text or "").strip()
+
+    # ====== МЕНЮ (ReplyKeyboard) ======
+    if raw.startswith("🧰") or "Почати діагностику" in raw:
+        uid = message.from_user.id
+        PENDING_DIAG.add(uid)
+        bot.send_message(
+            message.chat.id,
+            "🧪 Опиши проблему одним повідомленням.\n\n"
+            "Наприклад:\n"
+            "• гальмує браузер\n"
+            "• повільно вмикається ПК\n"
+            "• шумить кулер\n\n"
+            "Я аналізую і дам висновок 👇"
+        )
+        return
+
+    if raw.startswith("📘") or "Як проходить діагностика" in raw:
+        bot.send_message(
+            message.chat.id,
+            SCREEN_HOW_DIAG
+        )
+        return
+
+    if raw.startswith("💰") or "Вартість" in raw:
+        bot.send_message(
+            message.chat.id,
+            SCREEN_PACKAGES
+        )
+        return
+
+    if raw.startswith("🆘") or "Допомога" in raw:
+        bot.send_message(
+            message.chat.id,
+            "🆘 Напиши /start щоб повернутись у меню"
+        )
+        return
 @bot.callback_query_handler(func=lambda call: True)
 def on_cb(call):
     uid = call.from_user.id
     data = call.data
 
+
+
     if data == "back":
         bot.edit_message_text(
-            chat_id=call.message.chat.id,
-            message_id=call.message.message_id,
-            text=SCREEN_START,
-            reply_markup=kb_main(),
+    text=SCREEN_START,
+    chat_id=call.message.chat.id,
+    message_id=call.message.message_id,
+    reply_markup=kb_main(),
         )
         return
 
