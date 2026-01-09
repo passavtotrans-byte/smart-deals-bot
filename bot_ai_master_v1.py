@@ -310,7 +310,7 @@ def on_cb(call):
         bot.answer_callback_query(call.id)
         return
 
-    bot.answer_callback_query(call.id, "Невідома дія")
+        bot.answer_callback_query(call.id, "Невідома дія")
 
     if __name__ == "__main__":
         print("AI-Майстер V1 запущено…")
