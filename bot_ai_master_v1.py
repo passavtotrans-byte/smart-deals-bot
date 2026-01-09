@@ -168,41 +168,33 @@ def on_text(message):
 
     raw = (message.text or "").strip()
 
-    # ====== МЕНЮ (ReplyKeyboard) ======
-    if raw.startswith("🧰") or "Почати діагностику" in raw:
-        uid = message.from_user.id
-        PENDING_DIAG.add(uid)
-        bot.send_message(
-            message.chat.id,
-            "🧪 Опиши проблему одним повідомленням.\n\n"
-            "Наприклад:\n"
-            "• гальмує браузер\n"
-            "• повільно вмикається ПК\n"
-            "• шумить кулер\n\n"
-            "Я аналізую і дам висновок 👇"
-        )
-        return
+    # ====== МЕНЮ (ReplyKeyboard) — ОБРОБЛЯЄМО ПЕРШИМ ======
+if raw.startswith("🧰") or "Почати діагностику" in raw:
+    uid = message.from_user.id
+    PENDING_DIAG.add(uid)
+    bot.send_message(
+        message.chat.id,
+        "✅ Ок. Напиши ОДНИМ повідомленням:\n"
+        "1) Що саме гальмує (запуск/браузер/все)\n"
+        "2) Коли почалось (сьогодні/вчора/тиждень)\n"
+        "3) Windows 10/11\n"
+        "4) Чи були помилки/сині екрани\n\n"
+        "Приклад:\n"
+        "1) все\n2) тиждень\n3) 11\n4) ні"
+    )
+    return
 
-    if raw.startswith("📘") or "Як проходить діагностика" in raw:
-        bot.send_message(
-            message.chat.id,
-            SCREEN_HOW_DIAG
-        )
-        return
+if raw.startswith("ℹ️") or "Як проходить діагностика" in raw:
+    bot.send_message(message.chat.id, SCREEN_HOW_DIAG)
+    return
 
-    if raw.startswith("💰") or "Вартість" in raw:
-        bot.send_message(
-            message.chat.id,
-            SCREEN_PACKAGES
-        )
-        return
+if raw.startswith("💰") or "Вартість" in raw:
+    bot.send_message(message.chat.id, SCREEN_PACKAGES)
+    return
 
-    if raw.startswith("🆘") or "Допомога" in raw:
-        bot.send_message(
-            message.chat.id,
-            "🆘 Напиши /start щоб повернутись у меню"
-        )
-        return
+if raw.startswith("🆘") or "Допомога" in raw:
+    bot.send_message(message.chat.id, "🆘 Напиши /start щоб повернутись у меню")
+    return
 @bot.callback_query_handler(func=lambda call: True)
 def on_cb(call):
     uid = call.from_user.id
@@ -211,13 +203,12 @@ def on_cb(call):
 
 
     if data == "back":
-        bot.edit_message_text(
-    text=SCREEN_START,
-    chat_id=call.message.chat.id,
-    message_id=call.message.message_id,
-    reply_markup=kb_main(),
-        )
-        return
+    bot.send_message(
+        call.message.chat.id,
+        SCREEN_START,
+        reply_markup=kb_main(),c
+    )
+    return
 
     if data == "how_it_works":
         text = (
