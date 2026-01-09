@@ -243,6 +243,29 @@ def on_cb(call):
     uid = call.from_user.id
     data = call.data
 
+        # 🧰 Почати діагностику
+    if data == "diag_start":
+        PENDING_DIAG.add(uid)
+        bot.edit_message_text(
+            text=SCREEN_DIAG_REQUEST,
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id,
+            reply_markup=kb_back()
+        )
+        bot.answer_callback_query(call.id)
+        return
+
+    # 💰 Вибір пакета
+    if data.startswith("pkg_"):
+        pkg = data.replace("pkg_", "")
+        CHOSEN_PACKAGE[uid] = pkg
+        bot.edit_message_text(
+            text=SCREEN_CONSENT_SHORT,
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id,
+            reply_markup=kb_consent()
+        )
+        bot.answer_callback_query(call.id)
     # 🔙 Назад у головне меню
     if data == "back":
         bot.edit_message_text(
