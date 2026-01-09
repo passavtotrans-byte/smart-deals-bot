@@ -200,20 +200,23 @@ def on_text(message):
     uid = message.from_user.id
     raw = (message.text or "").strip()
 
-    # ====== МЕНЮ (ReplyKeyboard) ======
+    # 🧰 Почати діагностику
     if raw.startswith("🧰") or "Почати діагностику" in raw:
         PENDING_DIAG.add(uid)
         bot.send_message(message.chat.id, SCREEN_DIAG_REQUEST)
         return
 
+    # ℹ️ Як проходить діагностика
     if raw.startswith("ℹ️") or "Як проходить діагностика" in raw:
         bot.send_message(message.chat.id, SCREEN_HOW_DIAG)
         return
 
+    # 💰 Вартість
     if raw.startswith("💰") or "Вартість" in raw:
-        bot.send_message(message.chat.id, SCREEN_PACKAGES, reply_markup=kb_packages())
+        bot.send_message(message.chat.id, SCREEN_PACKAGES)
         return
 
+    # 🆘 Допомога
     if raw.startswith("🆘") or "Допомога" in raw:
         bot.send_message(message.chat.id, "🆘 Напиши /start щоб повернутись у меню")
         return
