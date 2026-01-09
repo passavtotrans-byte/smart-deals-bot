@@ -313,5 +313,5 @@ def on_cb(call):
     bot.answer_callback_query(call.id, "Невідома дія")
 
     if __name__ == "__main__":
-    print("AI-Майстер V1 запущено…")
-    bot.infinity_polling(timeout=60, long_polling_timeout=60)
+        print("AI-Майстер V1 запущено…")
+        bot.infinity_polling(timeout=60, long_polling_timeout=60)
