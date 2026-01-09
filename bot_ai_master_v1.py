@@ -195,112 +195,38 @@ if raw.startswith("💰") or "Вартість" in raw:
 if raw.startswith("🆘") or "Допомога" in raw:
     bot.send_message(message.chat.id, "🆘 Напиши /start щоб повернутись у меню")
     return
-@bot.callback_query_handler(func=lambda call: True)
-def on_cb(call):
-    uid = call.from_user.id
-    data = call.data
-
-
-
-    if data == "back":
-    bot.send_message(
-        call.message.chat.id,
-        SCREEN_START,
-        reply_markup=kb_main(),c
-    )
-    return
-
-    if data == "how_it_works":
-        text = (
-            "🧭 Як проходить діагностика:\n\n"
-            "1) Ти описуєш проблему одним повідомленням\n"
-            "2) AI робить попередній висновок\n"
-            "3) Ти обираєш пакет\n"
-            "4) Погоджуєш умови\n"
-            "5) Надаєш техдоступ\n"
-            "6) AI-Майстер працює та дає результат ✅"
-        )
-        bot.edit_message_text(call.message.chat.id, call.message.message_id, text, reply_markup=kb_back())
-        return
-
-    if data == "prices":
-        bot.edit_message_text(call.message.chat.id, call.message.message_id, PACKAGES_TEXT, reply_markup=kb_back())
-        return
-
-    if data == "help":
-        text = (
-            "🆘 Допомога\n\n"
-            "• Напиши /start щоб відкрити меню\n"
-            "• Якщо кнопки не натискаються — онови чат або повтори /start\n"
-        )
-        bot.edit_message_text(call.message.chat.id, call.message.message_id, text, reply_markup=kb_back())
-        return
-
-    if data == "diag_start":
-        PENDING_DIAG.add(uid)
-        bot.answer_callback_query(call.id)
-        bot.send_message(call.message.chat.id, SCREEN_DIAG_REQUEST)
-        return
-
-    if data.startswith("pkg_"):
-        pkg = data.replace("pkg_", "")
-        CHOSEN_PACKAGE[uid] = pkg
-        bot.edit_message_text(
-            call.message.chat.id,
-            call.message.message_id,
-            SCREEN_CONSENT_SHORT,
-            reply_markup=kb_consent(),
-        )
-        return
-
-    if data == "consent_yes":
-        HAS_CONSENT.add(uid)
-        bot.edit_message_text(
-            call.message.chat.id,
-            call.message.message_id,
-            SCREEN_ACCESS_REQUEST,
-            reply_markup=kb_access(),
-        )
-        return
-
-    if data == "access_yes":
-        HAS_ACCESS.add(uid)
-        bot.edit_message_text(
-            call.message.chat.id,
-            call.message.message_id,
-            SCREEN_WORKING,
-            reply_markup=kb_back(),
-        )
-        # Симуляція роботи (V1). У V2 тут буде справжня логіка/агент.
-        WORK_STARTED.add(uid)
-        bot.send_message(call.message.chat.id, "⏳ Працюю… (V1 тест)")
-
-        time.sleep(2)
-        bot.send_message(call.message.chat.id, "✅ Готово. Попередній результат: вимкнули зайвий автозапуск / оптимізували браузер.")
-
-        bot.send_message(call.message.chat.id, SCREEN_PAYMENT, reply_markup=kb_payment())
-        return
-
-    if data == "pay":
-        bot.answer_callback_query(call.id, "Оплата буде підключена у V2 ✅")
-        bot.send_message(call.message.chat.id, "✅ Дякую! У V2 тут буде реальна кнопка оплати.")
-        return
-
-    bot.answer_callback_query(call.id, "Невідома дія")
-
-
 @bot.message_handler(func=lambda m: True)
 def on_text(message):
     uid = message.from_user.id
+    raw = (message.text or "").strip()
+
+    # ====== МЕНЮ (ReplyKeyboard) ======
+    if raw.startswith("🧰") or "Почати діагностику" in raw:
+        PENDING_DIAG.add(uid)
+        bot.send_message(message.chat.id, SCREEN_DIAG_REQUEST)
+        return
+
+    if raw.startswith("ℹ️") or "Як проходить діагностика" in raw:
+        bot.send_message(message.chat.id, SCREEN_HOW_DIAG)
+        return
+
+    if raw.startswith("💰") or "Вартість" in raw:
+        bot.send_message(message.chat.id, SCREEN_PACKAGES, reply_markup=kb_packages())
+        return
+
+    if raw.startswith("🆘") or "Допомога" in raw:
+        bot.send_message(message.chat.id, "🆘 Напиши /start щоб повернутись у меню")
+        return
+
+    # ====== ДІАГНОСТИКА: чекаємо 1 повідомлення ======
     if uid in PENDING_DIAG:
         PENDING_DIAG.discard(uid)
-        DIAG_TEXT[uid] = (message.text or "").strip()
+        DIAG_TEXT[uid] = raw
 
-        # V1: дуже простий "висновок"
-        raw = DIAG_TEXT[uid].lower()
-        if "брауз" in raw or "chrome" in raw:
-            summary = "Схоже на проблему з браузером/розширеннями або апаратним прискоренням."
-        elif "запуск" in raw or "автозапуск" in raw:
+        raw_l = raw.lower()
+        if "брауз" in raw_l or "chrome" in raw_l:
+            summary = "Схоже на проблему з браузером/розширеннями або навантаженням."
+        elif "запуск" in raw_l or "автозапуск" in raw_l:
             summary = "Схоже на перевантажений автозапуск або системні служби."
         else:
             summary = "Схоже на навантаження системи (автозапуск/диск/служби)."
@@ -309,10 +235,60 @@ def on_text(message):
         bot.send_message(message.chat.id, text, reply_markup=kb_packages())
         return
 
-    # Якщо користувач пише не в режимі діагностики
     bot.send_message(message.chat.id, "Напиши /start щоб відкрити меню ✅")
+# ====== CALLBACKS (InlineKeyboard) ======
 
+@bot.callback_query_handler(func=lambda call: True)
+def on_cb(call):
+    uid = call.from_user.id
+    data = call.data
 
-if __name__ == "__main__":
+    # 🔙 Назад у головне меню
+    if data == "back":
+        bot.edit_message_text(
+            text=SCREEN_START,
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id,
+            reply_markup=kb_main()
+        )
+        bot.answer_callback_query(call.id)
+        return
+
+    # ℹ️ Як проходить діагностика
+    if data == "how_it_works":
+        bot.edit_message_text(
+            text=SCREEN_HOW_DIAG,
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id,
+            reply_markup=kb_back()
+        )
+        bot.answer_callback_query(call.id)
+        return
+
+    # 💰 Пакети
+    if data == "prices":
+        bot.edit_message_text(
+            text=SCREEN_PACKAGES,
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id,
+            reply_markup=kb_packages()
+        )
+        bot.answer_callback_query(call.id)
+        return
+
+    # 🆘 Допомога
+    if data == "help":
+        bot.edit_message_text(
+            text="🆘 Напиши /start щоб повернутись у меню",
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id,
+            reply_markup=kb_back()
+        )
+        bot.answer_callback_query(call.id)
+        return
+
+    bot.answer_callback_query(call.id, "Невідома дія")
+
+    if __name__ == "__main__":
     print("AI-Майстер V1 запущено…")
     bot.infinity_polling(timeout=60, long_polling_timeout=60)
