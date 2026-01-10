@@ -122,6 +122,7 @@ def kb_back():
     kb.add(types.InlineKeyboardButton("↩️ Назад", callback_data="back"))
     return kb
 
+
 def kb_packages():
     kb = types.InlineKeyboardMarkup(row_width=1)
     kb.add(
@@ -132,6 +133,7 @@ def kb_packages():
     )
     return kb
 
+
 def kb_consent():
     kb = types.InlineKeyboardMarkup(row_width=1)
     kb.add(
@@ -140,6 +142,7 @@ def kb_consent():
     )
     return kb
 
+
 def kb_access():
     kb = types.InlineKeyboardMarkup(row_width=1)
     kb.add(
@@ -147,6 +150,7 @@ def kb_access():
         types.InlineKeyboardButton("↩️ Назад", callback_data="back"),
     )
     return kb
+
 
 def kb_payment():
     kb = types.InlineKeyboardMarkup(row_width=1)
@@ -163,38 +167,7 @@ def kb_payment():
 def cmd_start(message):
     bot.send_message(message.chat.id, SCREEN_START, reply_markup=kb_main())
 
-@bot.message_handler(func=lambda m: True)
-def on_text(message): 
 
-    raw = (message.text or "").strip()
-
-    # ====== МЕНЮ (ReplyKeyboard) — ОБРОБЛЯЄМО ПЕРШИМ ======
-if raw.startswith("🧰") or "Почати діагностику" in raw:
-    uid = message.from_user.id
-    PENDING_DIAG.add(uid)
-    bot.send_message(
-        message.chat.id,
-        "✅ Ок. Напиши ОДНИМ повідомленням:\n"
-        "1) Що саме гальмує (запуск/браузер/все)\n"
-        "2) Коли почалось (сьогодні/вчора/тиждень)\n"
-        "3) Windows 10/11\n"
-        "4) Чи були помилки/сині екрани\n\n"
-        "Приклад:\n"
-        "1) все\n2) тиждень\n3) 11\n4) ні"
-    )
-    return
-
-if raw.startswith("ℹ️") or "Як проходить діагностика" in raw:
-    bot.send_message(message.chat.id, SCREEN_HOW_DIAG)
-    return
-
-if raw.startswith("💰") or "Вартість" in raw:
-    bot.send_message(message.chat.id, SCREEN_PACKAGES)
-    return
-
-if raw.startswith("🆘") or "Допомога" in raw:
-    bot.send_message(message.chat.id, "🆘 Напиши /start щоб повернутись у меню")
-    return
 @bot.message_handler(func=lambda m: True)
 def on_text(message):
     uid = message.from_user.id
