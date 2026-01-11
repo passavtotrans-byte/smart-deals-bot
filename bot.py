@@ -143,6 +143,12 @@ def setup_webhook():
 # ENTRYPOINT
 # =========================
 if __name__ == "__main__":
-    # Для Render: webhook + Flask
-    setup_webhook()
-    app.run(host="0.0.0.0", port=PORT)
+    # Якщо задано WEBHOOK_URL — запускаємо webhook (для Web Service)
+    if WEBHOOK_URL:
+        setup_webhook()
+        app.run(host="0.0.0.0", port=PORT)
+    else:
+        # Якщо WEBHOOK_URL НЕ задано — запускаємо polling (для Background Worker)
+        print("Starting bot in polling mode (no WEBHOOK_URL)...")
+        bot.remove_webhook()
+        bot.infinity_polling(timeout=60, long_polling_timeout=60)
